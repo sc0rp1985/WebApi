@@ -1,0 +1,2 @@
+﻿dotnet ef migrations add Initial --project DAO --startup-project WebApp
+dotnet ef database update --project DAO --startup-project WebApp
