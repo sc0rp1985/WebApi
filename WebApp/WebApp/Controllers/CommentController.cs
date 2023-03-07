@@ -2,6 +2,7 @@
 using BLL;
 using Microsoft.AspNetCore.Mvc;
 using Web.Models;
+using WebApp.Utils;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -30,7 +31,7 @@ namespace WebApp.Controllers
             var todo = await _gettodoService.GetAsync(id);
             if (todo == null)
                 return NotFound();
-            var comments = await _gettodoService.Async(id);
+            var comments = await _gettodoService.GetTodoCommetsAsync(id);
             var result = comments.Select(x => _mapper.Map<CommentWM>(x)).ToList();
             return Ok(result);
         }
@@ -39,14 +40,15 @@ namespace WebApp.Controllers
         [Route("todo/{id:int}")]
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status404NotFound, Type = typeof(string))]
         async public Task<IActionResult> Post(int id, [FromBody] string value)
         {
             var todo = await _gettodoService.GetAsync(id);
             if (todo == null)
                 return NotFound();
-            await _gettodoService.AddCommentAsync(id, new CommentDto { Text = value });
-            return Ok();
+            var operationResult = await _gettodoService.AddCommentAsync(id, new CommentDto { Text = value });
+            var result = this.OperationResultToActionResult(operationResult);
+            return result;
         }
         
     }

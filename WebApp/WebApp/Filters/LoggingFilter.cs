@@ -13,12 +13,12 @@ namespace WebApp.Filters
         readonly ILogger _logger;
         readonly ILogService _logService;
         readonly Stopwatch sw = new Stopwatch();
-        readonly Guid logContext;
+        //readonly Guid logCorrelation;
         public LoggingFilter(ILoggerFactory loggerFactory, ILogService logService)
         {
             _logger = loggerFactory.CreateLogger<LoggingFilter>();
             _logService = logService;
-            logContext = Guid.NewGuid();
+            //logCorrelation = Guid.NewGuid();
             _logger.LogInformation("{diaplayName} created", typeof(LoggingFilter));
         }
 
@@ -30,20 +30,21 @@ namespace WebApp.Filters
                 var controllerName = controller.ControllerContext.RouteData.Values["controller"]?.ToString();
                 var result = context.Result as IStatusCodeActionResult;
                 var statusCode = result?.StatusCode;
+                context.HttpContext.Request.Headers.TryGetValue("RequestGuid", out var logCorrelation);
                 sw.Stop();                
                 var logDto = new LogDto
                 {
                     Controller = controllerName ?? string.Empty,
                     Method = methodName ?? string.Empty,
                     Duration = sw.ElapsedMilliseconds,
-                    Correlation = logContext,
+                    Correlation = new Guid(logCorrelation.ToString()),//logCorrelation,
                     Logged = DateTime.Now,
                     Parameters = string.Empty,
                     Message = string.Empty,
                     Status = statusCode ?? 0, //controller.HttpContext.Response.StatusCode,
                 };
                 _logService.AddLog(logDto).Wait();
-                _logger.LogInformation("{displayName} executed; exec time(ms) - {execTime}. correlation ({correlation})  ", context.ActionDescriptor.DisplayName, sw.ElapsedMilliseconds, logContext);
+                _logger.LogInformation("{displayName} executed; exec time(ms) - {execTime}. correlation ({correlation})  ", context.ActionDescriptor.DisplayName, sw.ElapsedMilliseconds, logCorrelation);
             }
         }
 
@@ -55,19 +56,20 @@ namespace WebApp.Filters
                 var controllerName = controller.ControllerContext.RouteData.Values["controller"]?.ToString();                                               
                 //var body = context.HttpContext?.Request?.BodyToString();
                 var paramStr = string.Join(",", context.ActionArguments.Select(x => $"{{{x.Key} = {ParamToString(x.Value)}}}"));
+                context.HttpContext.Request.Headers.TryGetValue("RequestGuid", out var logCorrelation);                
                 var logDto = new LogDto
                 {
                     Controller = controllerName ?? string.Empty,
                     Method = methodName ?? string.Empty,
                     Duration = 0,
-                    Correlation = logContext,
+                    Correlation = new Guid(logCorrelation.ToString()),
                     Logged = DateTime.Now,
                     Parameters = paramStr,
                     Message = string.Empty,
                 };
                 _logService.AddLog(logDto).Wait();
                 sw.Start();
-                _logger.LogInformation("{displayName}: {controller} {method} {params} - is executing. correlation ({correlation})", context.ActionDescriptor.DisplayName, controllerName, methodName, paramStr,logContext);
+                _logger.LogInformation("{displayName}: {controller} {method} {params} - is executing. correlation ({correlation})", context.ActionDescriptor.DisplayName, controllerName, methodName, paramStr,logCorrelation);
             }
         }
 

@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using BLL;
+using Common;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using Web.Models;
 using WebApp.CustomMiddlewares;
+using WebApp.Utils;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -48,14 +50,15 @@ namespace WebApp.Controllers
         [HttpPost]
 
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError, Type = typeof(string))]
         async public Task<IActionResult> Post([FromBody] TodoWM todo)
         {
             if (ModelState.IsValid)
             {
                 var dto = _mapper.Map<TodoDto>(todo);
-                await _gettodoService.AddTodoAsync(dto);
-                return Ok();
+                var operResult = await _gettodoService.AddTodoAsync(dto);
+                return this.OperationResultToActionResult(operResult);
             }
             return BadRequest();
         }
@@ -70,8 +73,8 @@ namespace WebApp.Controllers
             if (todo == null)
                 return NotFound();
             todo.Title = title;
-            await _gettodoService.UpdateTodo(todo);
-            return Ok();
+            var operResult = await _gettodoService.UpdateTodoAsync(todo);
+            return this.OperationResultToActionResult(operResult);            
         }
 
         // DELETE api/<TodoController>/5
@@ -82,9 +85,10 @@ namespace WebApp.Controllers
         {
             var todo = await _gettodoService.GetAsync(id);
             if (todo == null)
-                return NotFound();
-            await _gettodoService.DeleteTodoAsync(id);
-            return Ok();
+                return NotFound();            
+            var operResult =  await _gettodoService.DeleteTodoAsync(id);
+            return this.OperationResultToActionResult(operResult);
+            //return Ok();
         }
     }
 }

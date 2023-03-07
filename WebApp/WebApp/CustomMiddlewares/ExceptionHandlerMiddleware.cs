@@ -1,6 +1,7 @@
 ﻿using BLL;
 using Newtonsoft.Json;
 using System.Net;
+using WebApp.Utils;
 
 namespace WebApp.CustomMiddlewares
 {
@@ -18,13 +19,15 @@ namespace WebApp.CustomMiddlewares
         {
             try
             {
+                context.Request.Headers.Add("RequestGuid", Guid.NewGuid().ToString());                
                 await _next.Invoke(context);
             }
             catch (Exception ex)
             {
                 var logger = _loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
-                logger.LogError(ex.Message);
-                await HandleExceptionMessageAsync(context, ex).ConfigureAwait(false);
+                context.Request.Headers.TryGetValue("RequestGuid", out var requestGuid);
+                logger.LogError($"{ex.Message} - correlation ({requestGuid})");                ;
+                await context.HandleExceptionMessageAsync(ex).ConfigureAwait(false);
                 
             }
         }

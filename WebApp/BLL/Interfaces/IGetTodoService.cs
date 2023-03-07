@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Common;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -10,12 +11,12 @@ namespace BLL
     public interface IGetTodoService
     {
         Task<List<TodoDto>> ListAsync(TodoQueryDto query);
-        Task AddTodoAsync(TodoDto todo);
+        Task<OperationResult> AddTodoAsync(TodoDto todo);
         Task<TodoDto> GetAsync(int todoId);
-        Task DeleteTodoAsync(int todoId);
-        Task UpdateTodo(TodoDto todo);
-        Task <List<CommentDto>> Async(int todoId);
-        Task AddCommentAsync(int todoId, CommentDto comment);
+        Task<OperationResult> DeleteTodoAsync(int todoId);
+        Task<OperationResult> UpdateTodoAsync(TodoDto todo);
+        Task <List<CommentDto>> GetTodoCommetsAsync(int todoId);
+        Task<OperationResult> AddCommentAsync(int todoId, CommentDto comment);
     }
 
     public class TodoDto 
@@ -40,6 +41,12 @@ namespace BLL
     { 
         public List<int> TodoIds { get; set; }
         public string Title { get; set; }
+    }
+
+    public class OperationResult 
+    { 
+        public OperationStatusEnum OperationStatus { get; set; }
+        public string Message { get; set; }
     }
 
 }

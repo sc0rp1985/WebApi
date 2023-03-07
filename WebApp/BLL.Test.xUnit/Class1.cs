@@ -40,7 +40,7 @@ namespace BLL.Test.xUnit
         async public void CommentListTest()
         {
             var srv = GetTodoService; 
-            var comments = await srv.Async(1);
+            var comments = await srv.GetTodoCommetsAsync(1);
             Assert.NotEmpty(comments);
             Assert.Equal(2, comments.Count);
         }
@@ -86,7 +86,7 @@ namespace BLL.Test.xUnit
             var title = Guid.NewGuid().ToString();
 
             obj.Title = title;
-            await srv.UpdateTodo(obj);
+            await srv.UpdateTodoAsync(obj);
 
             var updatedObj = await srv.GetAsync(obj.Id);
 

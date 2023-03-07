@@ -11,4 +11,12 @@ namespace Common
         public static List<string> Categories = new List<string> { "bookkeeping", "marketing", "analytics" };
         public static List<string> Colors = new List<string> { "red", "green", "blue" };
     }
+
+    public enum OperationStatusEnum
+    { 
+        Succesfully,
+        Error,
+        BadRequest,
+        NotFound
+    }
 }
