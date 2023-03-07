@@ -54,7 +54,7 @@ namespace WebApp.Filters
                 var methodName = controller.ControllerContext.RouteData.Values["action"]?.ToString(); ;
                 var controllerName = controller.ControllerContext.RouteData.Values["controller"]?.ToString();                                               
                 //var body = context.HttpContext?.Request?.BodyToString();
-                var paramStr = string.Join(",", context.ActionArguments.Select(x => $"{{{x.Key} = {x.Value?.ToString()}}}"));
+                var paramStr = string.Join(",", context.ActionArguments.Select(x => $"{{{x.Key} = {ParamToString(x.Value)}}}"));
                 var logDto = new LogDto
                 {
                     Controller = controllerName ?? string.Empty,
@@ -69,6 +69,14 @@ namespace WebApp.Filters
                 sw.Start();
                 _logger.LogInformation("{displayName}: {controller} {method} {params} - is executing. correlation ({correlation})", context.ActionDescriptor.DisplayName, controllerName, methodName, paramStr,logContext);
             }
+        }
+
+        string ParamToString(object param)
+        {
+            if (param == null) return string.Empty;
+            if (param is IEnumerable<object> collection)
+                return string.Join(";", collection.Select(x => x.ToString()));
+            return param?.ToString() ?? string.Empty;
         }
     }
 

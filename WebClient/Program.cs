@@ -15,6 +15,10 @@ data = client.GetStringAsync(baseUrl + "todo/List?Title=string").Result;
 Console.WriteLine(data);
 Console.ReadKey();
 
+data = client.GetStringAsync(baseUrl + "Todo/List?TodoIds=2&TodoIds=4&TodoIds=8&Title=string").Result;
+Console.WriteLine(data);
+Console.ReadKey();
+
 
 data = client.GetStringAsync(baseUrl + "Todo/2").Result;
 Console.WriteLine(data);
